@@ -52,3 +52,8 @@ You're free to approach this however you like. We'll ask you to describe your ap
 This asks you to fix a broken function and then write a unit test for it.
 
 **The function has been edited to perform additional verification on whether the time inputted is valid. Tests can be run using `pytest test_3.py`**
+
+# REQUIREMENTS
+
+- Pytest for running tests.
+- Requests for test_2.
