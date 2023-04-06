@@ -25,7 +25,7 @@ def is_log_line(line):
         return False
 
     if split_line[2] not in ['INFO', 'TRACE', 'WARNING']:
-        return None
+        return False
     return True
 
 
