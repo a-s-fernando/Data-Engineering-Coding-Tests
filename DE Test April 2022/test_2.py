@@ -1,3 +1,6 @@
+import csv
+import requests
+
 # A team of analysts wish to discover how far people are travelling to their nearest
 # desired court. We have provided you with a small test dataset so you can find out if
 # it is possible to give the analysts the data they need to do this. The data is in
@@ -69,6 +72,58 @@
 # - the dx_number (if available) of the nearest court of the right type
 # - the distance to the nearest court of the right type
 
+
+def get_data(filename: str) -> dict:
+    """Turn a csv file into a dict."""
+    data = []
+    with open(filename, mode='r', encoding='UTF-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            data.append(row)
+    return data
+
+
+def generate_combined_data(data_in: list):
+    """"""
+    data_out = data_in
+    for index, query in enumerate(data_out):
+        r = requests.get(
+            f"https://courttribunalfinder.service.gov.uk/search/results.json?postcode={query['home_postcode']}")
+        courts = r.json()
+        for court in courts:
+            if query['looking_for_court_type'] in court['types']:
+                data_out[index]['nearest_court_name'] = court['name']
+                data_out[index]['nearest_court_distance'] = court['distance']
+                if 'dx_number' in court and court['dx_number'] is not None:
+                    data_out[index]['nearest_court_dx_number'] = court['dx_number']
+                break
+    return data_out
+
+
 if __name__ == "__main__":
-    # [TODO]: write your answer here
-    pass
+    data = get_data('people.csv')
+    combined_data = generate_combined_data(data)
+    for row in combined_data:
+        print(row)
+
+
+def test_get_data():
+    assert get_data('people.csv')[0] == {'person_name': 'Iriquois Pliskin',
+                                         'home_postcode': 'SE17TP',
+                                         'looking_for_court_type': 'Crown Court'}
+    assert get_data('people.csv')[9] == {'person_name': 'Guido Van Rossum',
+                                         'home_postcode': 'NR162HE',
+                                         'looking_for_court_type': 'County Court'}
+
+
+def test_generate_combined_data():
+    # Valid as of 6th April 2023 (new courts may be added in future)
+    val = generate_combined_data([{'person_name': 'test',
+                                   'home_postcode': 'LS63AB',
+                                   'looking_for_court_type': 'County Court'}])[0]
+    assert val == {'person_name': 'test',
+                   'home_postcode': 'LS63AB',
+                   'looking_for_court_type': 'County Court',
+                   'nearest_court_name': 'Leeds Combined Court Centre',
+                   'nearest_court_distance': 1.76,
+                   'nearest_court_dx_number': '703016 Leeds 6'}

@@ -1,4 +1,3 @@
-# [TODO]: step 1
 # Update the is_log_line function below to skip lines that are not valid log lines.
 # Valid log lines have a timestamp, error type, and message. For example, lines 1, 3,
 # 7 and 37 are all examples of lines (from sample.log) that would be filtered out.
@@ -9,10 +8,27 @@ def is_log_line(line):
     """Takes a log line and returns True if it is a valid log line and returns nothing
     if it is not.
     """
+    split_line = line.split(' ')
+    if len(split_line) < 4:
+        return False
+
+    def validate_date_or_time(character: str, index: int):
+        if character not in split_line[index]:
+            return False
+        if character not in split_line[index].replace(character, '', 1):
+            return False
+        if not split_line[index].replace(character, '').isnumeric():
+            return False
+        return True
+
+    if not validate_date_or_time('/', 0) or not validate_date_or_time(':', 1):
+        return False
+
+    if split_line[2] not in ['INFO', 'TRACE', 'WARNING']:
+        return None
     return True
 
 
-# [TODO]: step 2
 # Update the get_dict function below so it converts a line of the logs into a
 # dictionary with keys for "timestamp", "log_level", and "message". The valid log
 # levels are `INFO`, `TRACE`, and `WARNING`. See lines 67 to 71 for how we expect the
@@ -21,7 +37,10 @@ def get_dict(line):
     """Takes a log line and returns a dict with
     `timestamp`, `log_level`, `message` keys
     """
-    pass
+    split_line = line.split(' ')
+    return {'timestamp': split_line[0] + ' ' + split_line[1],
+            'log_level': split_line[2],
+            'message': ' '.join(split_line[3:]).strip()}
 
 
 # YOU DON'T NEED TO CHANGE ANYTHING BELOW THIS LINE
